@@ -21,7 +21,7 @@ func NewClassroom(db *gorm.DB) models.ClassroomRepository {
 
 func (r *classroomRepository) FindByID(ctx context.Context, id int) (res *models.Classroom, err error) {
 	var classroom models.Classroom
-	err = r.db.Where("id = ?", id).First(&classroom).Error
+	err = r.db.Where("id = ?", id).Preload("Teacher").First(&classroom).Error
 	if err != nil {
 		return nil, err
 	}
@@ -66,7 +66,7 @@ func (r *classroomRepository) FindAll(ctx context.Context, dto dto.QueryDTO) (cl
 		return
 	}
 
-	err = r.db.Scopes(helpers.Paginate(dto.Page, dto.Size), helpers.Search(*dto.Search)).Find(&classrooms).Error
+	err = r.db.Scopes(helpers.Paginate(dto.Page, dto.Size), helpers.Search(*dto.Search)).Preload("Teacher").Find(&classrooms).Error
 
 	if err != nil {
 		return nil, totalPage, err
