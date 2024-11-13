@@ -3,6 +3,8 @@ package models
 import (
 	"context"
 	"time"
+
+	"github.com/handarudwiki/models/dto"
 )
 
 type Lecture struct {
@@ -23,4 +25,7 @@ type Lecture struct {
 type LectureRepository interface {
 	FindByID(ctx context.Context, id int) (*Lecture, error)
 	Create(ctx context.Context, lecture *Lecture) (*Lecture, error)
+	Update(ctx context.Context, lecture *Lecture, id int) (*Lecture, error)
+	Delete(ctx context.Context, id int) error
+	FindAll(ctx context.Context, dto dto.QueryDTO) ([]*Lecture, int, error)
 }

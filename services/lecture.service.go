@@ -14,6 +14,9 @@ import (
 type LectureService interface {
 	CreateLecture(ctx context.Context, dto dto.CreateLectureDTO) (res response.LectureResponse, err error)
 	FindByID(ctx context.Context, id int) (res response.LectureResponse, err error)
+	FindAll(ctx context.Context, dto dto.QueryDTO) (res []response.LectureResponse, page commons.Paginate, err error)
+	Update(ctx context.Context, dto dto.UpdateLectureDTO, id int) (res response.LectureResponse, err error)
+	Delete(ctx context.Context, id int) error
 }
 
 type lectureService struct {
@@ -60,4 +63,62 @@ func (s *lectureService) FindByID(ctx context.Context, id int) (res response.Lec
 	res = response.ToLectureResponse(lecture)
 
 	return res, nil
+}
+
+func (s *lectureService) FindAll(ctx context.Context, dto dto.QueryDTO) (res []response.LectureResponse, page commons.Paginate, err error) {
+	lectures, totalPage, err := s.lectureRepo.FindAll(ctx, dto)
+	if err != nil {
+		return res, page, err
+	}
+
+	page = commons.ToPaginate(dto.Page, dto.Size, totalPage)
+
+	res = response.ToLectureResponseSlice(lectures)
+
+	return res, page, nil
+}
+
+func (s *lectureService) Update(ctx context.Context, dto dto.UpdateLectureDTO, id int) (res response.LectureResponse, err error) {
+	lecture, err := s.lectureRepo.FindByID(ctx, id)
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		return res, err
+	}
+
+	if err != nil {
+		return res, commons.ErrNotFound
+	}
+
+	lecture.SubjectID = dto.SubjectID
+	lecture.Title = dto.Title
+	lecture.Body = dto.Body
+	lecture.Addition = dto.Addition
+	lecture.Settings = dto.Settings
+
+	lecture, err = s.lectureRepo.Update(ctx, lecture, id)
+	if err != nil {
+		return res, err
+	}
+
+	res = response.ToLectureResponse(lecture)
+
+	return res, nil
+}
+
+func (s *lectureService) Delete(ctx context.Context, id int) error {
+	_, err := s.lectureRepo.FindByID(ctx, id)
+
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		return err
+	}
+
+	if err != nil {
+		return commons.ErrNotFound
+	}
+
+	err = s.lectureRepo.Delete(ctx, id)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
