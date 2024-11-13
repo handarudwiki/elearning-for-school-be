@@ -2,9 +2,18 @@ package helpers
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/go-playground/validator/v10"
 )
+
+func futureDate(fl validator.FieldLevel) bool {
+	deadline, ok := fl.Field().Interface().(time.Time)
+	if !ok {
+		return false
+	}
+	return deadline.After(time.Now())
+}
 
 var validate = validator.New()
 
@@ -15,6 +24,7 @@ type ValidationError struct {
 
 func ValidateRequest(req interface{}) []ValidationError {
 	var errors []ValidationError
+	validate.RegisterValidation("future_date", futureDate)
 	err := validate.Struct(req)
 	fmt.Println(err)
 	if err != nil {
