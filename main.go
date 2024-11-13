@@ -21,20 +21,24 @@ func main() {
 	userRepository := repositories.NewUser(db)
 	subjectRepository := repositories.NewSubject(db)
 	lectureRepository := repositories.NewLecture(db)
+	classroomRepository := repositories.NewClassroom(db)
 
 	//services
 	jwtService := services.NewJWT(config.JWT)
 	userService := services.NewUser(userRepository, jwtService)
 	subjectService := services.NewSubject(subjectRepository)
 	lectureService := services.NewLecture(lectureRepository)
+	classroomService := services.NewClassroom(classroomRepository, userRepository)
 
 	app := fiber.New(fiber.Config{
 		AppName: "Elearning nih bos",
 	})
 
+	//controllers
 	controllers.NewUser(app, userService)
 	controllers.NewSubject(app, subjectService, jwtService)
 	controllers.NewLecture(app, lectureService, jwtService)
+	controllers.NewClassroom(app, classroomService, jwtService)
 
 	app.Listen(":" + config.Server.Port)
 }

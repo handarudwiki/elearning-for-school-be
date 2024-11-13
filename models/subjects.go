@@ -8,7 +8,7 @@ import (
 )
 
 type Subject struct {
-	ID          uint      `json:"id""`
+	ID          uint      `json:"id"`
 	Name        string    `json:"name"`
 	Description string    `json:"description"`
 	Settings    string    `json:"settings"`

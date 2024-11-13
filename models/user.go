@@ -34,4 +34,6 @@ type UserRepositoy interface {
 	FindAll(ctx context.Context, dto dto.QueryDTO) ([]*User, int, error)
 	Update(ctx context.Context, id int, user *User) (*User, error)
 	Delete(ctx context.Context, id int) error
+	FindTeacherByID(ctx context.Context, id int) (*User, error)
+	FindStudentByID(ctx context.Context, id int) (*User, error)
 }

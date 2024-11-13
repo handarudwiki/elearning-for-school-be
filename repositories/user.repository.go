@@ -7,6 +7,7 @@ import (
 
 	"github.com/handarudwiki/helpers"
 	"github.com/handarudwiki/models"
+	"github.com/handarudwiki/models/commons"
 	"github.com/handarudwiki/models/dto"
 	"gorm.io/gorm"
 )
@@ -88,4 +89,24 @@ func (r *UserRepository) FindAll(ctx context.Context, dto dto.QueryDTO) ([]*mode
 	}
 
 	return users, int(totalPage), nil
+}
+
+func (r *UserRepository) FindTeacherByID(ctx context.Context, id int) (*models.User, error) {
+	var users *models.User
+	err := r.db.Where("id = ?", id).Where("role = ?", commons.ROLETEACHER).Find(&users).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return users, nil
+}
+
+func (r *UserRepository) FindStudentByID(ctx context.Context, id int) (*models.User, error) {
+	var users *models.User
+	err := r.db.Where("id = ?", id).Where("role = ?", commons.ROLESTUDENT).Find(&users).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return users, nil
 }
