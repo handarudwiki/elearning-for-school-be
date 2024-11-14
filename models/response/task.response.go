@@ -1,6 +1,7 @@
 package response
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/handarudwiki/models"
@@ -18,7 +19,8 @@ type TaskResponse struct {
 	Deadline time.Time    `json:"deadline"`
 }
 
-func ToTaskResponse(task models.Task) TaskResponse {
+func ToTaskResponse(task *models.Task) TaskResponse {
+	fmt.Println(task.User.Name)
 	return TaskResponse{
 		ID:       task.ID,
 		Title:    task.Title,
@@ -32,7 +34,7 @@ func ToTaskResponse(task models.Task) TaskResponse {
 	}
 }
 
-func ToTaskResponseSlice(task []models.Task) []TaskResponse {
+func ToTaskResponseSlice(task []*models.Task) []TaskResponse {
 	var taskResponseSlice []TaskResponse
 	for _, task := range task {
 		taskResponseSlice = append(taskResponseSlice, ToTaskResponse(task))

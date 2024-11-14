@@ -3,6 +3,8 @@ package models
 import (
 	"context"
 	"time"
+
+	"github.com/handarudwiki/models/dto"
 )
 
 type Task struct {
@@ -22,4 +24,7 @@ type Task struct {
 type TaskRepository interface {
 	Create(ctx context.Context, task *Task) (*Task, error)
 	FindByID(ctx context.Context, id int) (*Task, error)
+	Update(ctx context.Context, id int, task *Task) (*Task, error)
+	Delete(ctx context.Context, id int) error
+	FindAll(ctx context.Context, query dto.QueryDTO) ([]*Task, int, error)
 }

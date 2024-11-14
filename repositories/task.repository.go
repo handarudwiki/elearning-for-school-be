@@ -3,7 +3,9 @@ package repositories
 import (
 	"context"
 
+	"github.com/handarudwiki/helpers"
 	"github.com/handarudwiki/models"
+	"github.com/handarudwiki/models/dto"
 	"gorm.io/gorm"
 )
 
@@ -32,4 +34,35 @@ func (t *taskRepository) FindByID(ctx context.Context, id int) (*models.Task, er
 	}
 
 	return &task, nil
+}
+
+func (t *taskRepository) Update(ctx context.Context, id int, task *models.Task) (*models.Task, error) {
+	if err := t.db.WithContext(ctx).Model(&models.Task{}).Where("id = ?", id).Updates(task).Error; err != nil {
+		return nil, err
+	}
+
+	return task, nil
+}
+
+func (t *taskRepository) Delete(ctx context.Context, id int) error {
+	if err := t.db.WithContext(ctx).Where("id = ?", id).Delete(&models.Task{}).Error; err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (t *taskRepository) FindAll(ctx context.Context, query dto.QueryDTO) ([]*models.Task, int, error) {
+	var tasks []*models.Task
+	var count int64
+
+	if err := t.db.Scopes(helpers.SearchTitle(*query.Search), helpers.FilterIsActive(query.Is_active)).Error; err != nil {
+		return nil, 0, err
+	}
+
+	if err := t.db.Scopes(helpers.Paginate(query.Page, query.Size), helpers.FilterIsActive(query.Is_active), helpers.SearchTitle(*query.Search)).Preload("User").Find(&tasks).Error; err != nil {
+		return nil, 0, err
+	}
+
+	return tasks, int(count), nil
 }
