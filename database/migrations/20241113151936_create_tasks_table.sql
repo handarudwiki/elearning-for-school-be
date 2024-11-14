@@ -2,7 +2,7 @@
 -- +goose StatementBegin
 CREATE TABLE tasks (
     id SERIAL PRIMARY KEY,
-    user_id INT NOT NULL REFERENCES classrooms(id) ON DELETE CASCADE,
+    user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     title VARCHAR(255) NOT NULL,
     body TEXT NULL,
     type INT DEFAULT 0, -- 0: image, 1: FileUpload, 2: Essay
