@@ -15,4 +15,6 @@ type ClassroomSubject struct {
 type ClassroomSubjectRepository interface {
 	Create(ctx context.Context, classroomSubject *ClassroomSubject) (*ClassroomSubject, error)
 	FindByTeacherID(ctx context.Context, teacherID int) ([]*ClassroomSubject, error)
+	Delete(ctx context.Context, id int) error
+	FindByID(ctx context.Context, id int) (*ClassroomSubject, error)
 }

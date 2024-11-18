@@ -35,3 +35,22 @@ func (r *classroomSubjectRepository) FindByTeacherID(ctx context.Context, teache
 
 	return classroomSubjects, nil
 }
+
+func (r *classroomSubjectRepository) Delete(ctx context.Context, id int) error {
+	err := r.db.Where("id = ?", id).Delete(&models.ClassroomSubject{}).Error
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r *classroomSubjectRepository) FindByID(ctx context.Context, id int) (*models.ClassroomSubject, error) {
+	var classroomSubject models.ClassroomSubject
+	err := r.db.Where("id = ?", id).Preload("Classroom").Preload("Subject").Preload("Teacher").First(&classroomSubject).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return &classroomSubject, nil
+}

@@ -2,15 +2,19 @@ package services
 
 import (
 	"context"
+	"errors"
 
 	"github.com/handarudwiki/models"
+	"github.com/handarudwiki/models/commons"
 	"github.com/handarudwiki/models/dto"
 	"github.com/handarudwiki/models/response"
+	"gorm.io/gorm"
 )
 
 type ClassroomSubjectService interface {
 	FindByTeacherID(ctx context.Context, teacherID int) (res []response.ClassroomSubjectResponse, err error)
 	Create(ctx context.Context, dto dto.CreateClassrooomSubject) (res response.ClassroomSubjectResponse, err error)
+	Delete(ctx context.Context, id int) error
 }
 
 type classroomSubjectService struct {
@@ -67,4 +71,24 @@ func (s *classroomSubjectService) Create(ctx context.Context, dto dto.CreateClas
 	res = response.ToClassroomSubjectResponse(newClassroomSubject)
 
 	return res, nil
+}
+
+func (s *classroomSubjectService) Delete(ctx context.Context, id int) error {
+
+	_, err := s.classroomSubjectRepo.FindByID(ctx, id)
+
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		return err
+	}
+
+	if err != nil {
+		return commons.ErrNotFound
+	}
+
+	err = s.classroomSubjectRepo.Delete(ctx, id)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

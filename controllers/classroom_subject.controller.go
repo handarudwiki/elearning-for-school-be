@@ -23,6 +23,7 @@ func NewClassroomSubject(app *fiber.App, classroomSubjectService services.Classr
 
 	classroomSubjects.Get("/", middlewares.CheckAuth(jwtService), classroomSubjectController.FindByTeacherID)
 	classroomSubjects.Post("/", middlewares.CheckAuth(jwtService), classroomSubjectController.Create)
+	classroomSubjects.Delete("/:id", middlewares.CheckAuth(jwtService), classroomSubjectController.Delete)
 }
 
 func (c *classroomSubjectController) FindByTeacherID(ctx *fiber.Ctx) error {
@@ -76,5 +77,29 @@ func (c *classroomSubjectController) Create(ctx *fiber.Ctx) error {
 
 	return ctx.Status(fiber.StatusCreated).JSON(
 		helpers.ResponseSuccess(res),
+	)
+}
+
+func (c *classroomSubjectController) Delete(ctx *fiber.Ctx) error {
+	id, err := ctx.ParamsInt("id")
+
+	if err != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(
+			helpers.ResponseError(err.Error()),
+		)
+	}
+
+	err = c.classroomSubjectService.Delete(ctx.Context(), id)
+
+	if err != nil {
+		statusCode := helpers.GetHttpStatusCode(err)
+
+		return ctx.Status(statusCode).JSON(
+			helpers.ResponseError(err.Error()),
+		)
+	}
+
+	return ctx.Status(fiber.StatusOK).JSON(
+		helpers.ResponseSuccess("Classroom subject deleted"),
 	)
 }
