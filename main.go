@@ -24,6 +24,7 @@ func main() {
 	classroomRepository := repositories.NewClassroom(db)
 	taskRepository := repositories.NewTask(db)
 	classrooomTaskRepository := repositories.NewClassroomTask(db)
+	classroomSubjectRepository := repositories.NewClassroomSubject(db)
 
 	//services
 	jwtService := services.NewJWT(config.JWT)
@@ -33,6 +34,7 @@ func main() {
 	classroomService := services.NewClassroom(classroomRepository, userRepository)
 	taskService := services.NewTask(taskRepository, userService)
 	classroomTaskService := services.NewClassroomTask(classrooomTaskRepository, taskService, classroomService)
+	classroomSubjectService := services.NewClassroomSubject(classroomSubjectRepository, classroomService, subjectService)
 
 	app := fiber.New(fiber.Config{
 		AppName: "Elearning nih bos",
@@ -45,6 +47,7 @@ func main() {
 	controllers.NewClassroom(app, classroomService, jwtService)
 	controllers.NewTask(app, taskService, jwtService)
 	controllers.NewClassroomTaskController(app, classroomTaskService, jwtService)
+	controllers.NewClassroomSubject(app, classroomSubjectService, jwtService)
 
 	app.Listen(":" + config.Server.Port)
 }

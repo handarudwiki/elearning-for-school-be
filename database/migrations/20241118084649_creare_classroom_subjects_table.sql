@@ -1,6 +1,6 @@
 -- +goose Up
 -- +goose StatementBegin
-CREATE TABLE classroom_subject(
+CREATE TABLE classroom_subjects(
     id SERIAL PRIMARY KEY,
     classroom_id INT NOT NULL REFERENCES classrooms(id) ON DELETE CASCADE,
     subject_id INT NOT NULL REFERENCES subjects(id) ON DELETE CASCADE,
