@@ -48,3 +48,21 @@ func (r *scheduleRepository) FindByClassroomSubjectID(ctx context.Context, class
 
 	return schedule, nil
 }
+
+func (r *scheduleRepository) Delete(ctx context.Context, id int) error {
+	err := r.db.Where("id = ?", id).Delete(&models.Schedule{}).Error
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r *scheduleRepository) Update(ctx context.Context, id int, schedule *models.Schedule) (*models.Schedule, error) {
+	err := r.db.Where("id = ?", id).Updates(schedule).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return schedule, nil
+}

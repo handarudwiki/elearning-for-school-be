@@ -15,6 +15,8 @@ type ScheduleService interface {
 	CreateSchedule(ctx context.Context, schedule *dto.ScheduleDTO) (*response.ScheduleResponse, error)
 	GetScheduleByID(ctx context.Context, id int) (*response.ScheduleResponse, error)
 	GetByClassroomSubjectID(ctx context.Context, classroomSubjectID int) ([]*response.ScheduleResponse, error)
+	Delete(ctx context.Context, id int) error
+	Update(ctx context.Context, schedule *dto.ScheduleDTO, id int) (*response.ScheduleResponse, error)
 }
 
 type scheduleService struct {
@@ -76,4 +78,51 @@ func (s *scheduleService) GetByClassroomSubjectID(ctx context.Context, classroom
 	res := response.ToScheduleResponsesSlice(schedules)
 
 	return res, nil
+}
+
+func (s *scheduleService) Delete(ctx context.Context, id int) error {
+	_, err := s.scheduleRepo.FindByID(ctx, id)
+
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		return err
+	}
+
+	if err != nil {
+		return commons.ErrNotFound
+	}
+	err = s.scheduleRepo.Delete(ctx, id)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *scheduleService) Update(ctx context.Context, schedule *dto.ScheduleDTO, id int) (*response.ScheduleResponse, error) {
+	_, err := s.classroomSubjectService.FindByID(ctx, int(schedule.ClassroomSubjectID))
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, err
+	}
+
+	if err != nil {
+		return nil, commons.ErrNotFound
+	}
+
+	if schedule.EndTime <= schedule.StartTime {
+		return nil, commons.ErrInvalidInput
+	}
+
+	scheduleToUpdate := models.Schedule{
+		ClassroomSubjectID: schedule.ClassroomSubjectID,
+		Day:                schedule.Day,
+		StartTime:          schedule.StartTime,
+		EndTime:            schedule.EndTime,
+	}
+
+	updatedSchedule, err := s.scheduleRepo.Update(ctx, id, &scheduleToUpdate)
+	if err != nil {
+		return nil, err
+	}
+
+	return response.ToScheduleResponse(*updatedSchedule), nil
 }

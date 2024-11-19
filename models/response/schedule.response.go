@@ -6,7 +6,7 @@ import (
 
 type ScheduleResponse struct {
 	ID                 uint                      `json:"id"`
-	ClassroomSubjectID uint                      `json:"classroom_id"`
+	ClassroomSubjectID uint                      `json:"classroom_subject_id"`
 	ClassroomSubject   *ClassroomSubjectResponse `json:"classroom_subject,omitempty"`
 	Day                int                       `json:"day"`
 	StartTime          string                    `json:"start_at"`

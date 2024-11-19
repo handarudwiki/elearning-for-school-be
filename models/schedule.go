@@ -20,4 +20,6 @@ type ScheduleRepository interface {
 	Create(ctc context.Context, schedule *Schedule) (*Schedule, error)
 	FindByID(ctx context.Context, id int) (*Schedule, error)
 	FindByClassroomSubjectID(ctx context.Context, classroomSubjectID int) ([]*Schedule, error)
+	Delete(ctx context.Context, id int) error
+	Update(ctx context.Context, id int, schedule *Schedule) (*Schedule, error)
 }
