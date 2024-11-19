@@ -31,10 +31,10 @@ func ToScheduleResponse(schedule models.Schedule) *ScheduleResponse {
 	}
 }
 
-func ToScheduleResponses(schedules []models.Schedule) []*ScheduleResponse {
+func ToScheduleResponsesSlice(schedules []*models.Schedule) []*ScheduleResponse {
 	var scheduleResponses []*ScheduleResponse
 	for _, schedule := range schedules {
-		scheduleResponses = append(scheduleResponses, ToScheduleResponse(schedule))
+		scheduleResponses = append(scheduleResponses, ToScheduleResponse(*schedule))
 	}
 	return scheduleResponses
 }

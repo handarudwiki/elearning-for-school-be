@@ -24,6 +24,7 @@ func NewScheduleController(app *fiber.App, scheduleService services.ScheduleServ
 	schedules := app.Group("/api/v1/schedules")
 	schedules.Post("/", middlewares.CheckAuth(jwtService), schedule.Create)
 	schedules.Get("/:id", schedule.GetByID)
+	schedules.Get("/classroom-subject/:classroomSubjectID", schedule.GetByClassroomSubjectID)
 }
 
 func (c *ScheduleController) Create(ctx *fiber.Ctx) error {
@@ -78,4 +79,26 @@ func (c *ScheduleController) GetByID(ctx *fiber.Ctx) error {
 		helpers.ResponseSuccess(res),
 	)
 
+}
+
+func (c *ScheduleController) GetByClassroomSubjectID(ctx *fiber.Ctx) error {
+	classroomSubjectID, err := strconv.Atoi(ctx.Params("classroomSubjectID"))
+	if err != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(
+			helpers.ResponseError(err.Error()),
+		)
+	}
+
+	res, err := c.scheduleService.GetByClassroomSubjectID(ctx.Context(), classroomSubjectID)
+	if err != nil {
+		statusCode := helpers.GetHttpStatusCode(err)
+
+		return ctx.Status(statusCode).JSON(
+			helpers.ResponseError(err.Error()),
+		)
+	}
+
+	return ctx.Status(fiber.StatusOK).JSON(
+		helpers.ResponseSuccess(res),
+	)
 }

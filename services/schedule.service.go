@@ -14,6 +14,7 @@ import (
 type ScheduleService interface {
 	CreateSchedule(ctx context.Context, schedule *dto.ScheduleDTO) (*response.ScheduleResponse, error)
 	GetScheduleByID(ctx context.Context, id int) (*response.ScheduleResponse, error)
+	GetByClassroomSubjectID(ctx context.Context, classroomSubjectID int) ([]*response.ScheduleResponse, error)
 }
 
 type scheduleService struct {
@@ -64,4 +65,15 @@ func (s *scheduleService) GetScheduleByID(ctx context.Context, id int) (*respons
 	}
 
 	return response.ToScheduleResponse(*schedule), nil
+}
+
+func (s *scheduleService) GetByClassroomSubjectID(ctx context.Context, classroomSubjectID int) ([]*response.ScheduleResponse, error) {
+	schedules, err := s.scheduleRepo.FindByClassroomSubjectID(ctx, classroomSubjectID)
+	if err != nil {
+		return nil, err
+	}
+
+	res := response.ToScheduleResponsesSlice(schedules)
+
+	return res, nil
 }

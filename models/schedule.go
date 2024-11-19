@@ -19,4 +19,5 @@ type Schedule struct {
 type ScheduleRepository interface {
 	Create(ctc context.Context, schedule *Schedule) (*Schedule, error)
 	FindByID(ctx context.Context, id int) (*Schedule, error)
+	FindByClassroomSubjectID(ctx context.Context, classroomSubjectID int) ([]*Schedule, error)
 }

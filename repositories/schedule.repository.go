@@ -37,3 +37,14 @@ func (r *scheduleRepository) Create(ctx context.Context, schedule *models.Schedu
 
 	return schedule, nil
 }
+
+func (r *scheduleRepository) FindByClassroomSubjectID(ctx context.Context, classroomSubjectID int) (res []*models.Schedule, err error) {
+	var schedule []*models.Schedule
+	err = r.db.Where("classroom_subject_id = ?", classroomSubjectID).Order("start_time ").Find(&schedule).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	return schedule, nil
+}
