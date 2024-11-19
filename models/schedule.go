@@ -22,4 +22,5 @@ type ScheduleRepository interface {
 	FindByClassroomSubjectID(ctx context.Context, classroomSubjectID int) ([]*Schedule, error)
 	Delete(ctx context.Context, id int) error
 	Update(ctx context.Context, id int, schedule *Schedule) (*Schedule, error)
+	GetScheduleByday(ctx context.Context, day, teacherID int) ([]*Schedule, error)
 }

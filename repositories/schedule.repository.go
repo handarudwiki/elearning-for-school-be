@@ -66,3 +66,18 @@ func (r *scheduleRepository) Update(ctx context.Context, id int, schedule *model
 
 	return schedule, nil
 }
+
+func (r *scheduleRepository) GetScheduleByday(ctx context.Context, day, teacherID int) (res []*models.Schedule, err error) {
+	var schedule []*models.Schedule
+	err = r.db.Where(
+		"day = ?", day,
+	).Preload("ClassroomSubject.Classroom").Preload("ClassroomSubject.Subject").
+		Where("classroom_subject_id IN (SELECT id from classroom_subjects WHERE teacher_id =? )", teacherID).Order("start_time").
+		Find(&schedule).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	return schedule, nil
+}

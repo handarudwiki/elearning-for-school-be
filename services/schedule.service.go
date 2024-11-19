@@ -3,6 +3,8 @@ package services
 import (
 	"context"
 	"errors"
+	"fmt"
+	"time"
 
 	"github.com/handarudwiki/models"
 	"github.com/handarudwiki/models/commons"
@@ -17,6 +19,7 @@ type ScheduleService interface {
 	GetByClassroomSubjectID(ctx context.Context, classroomSubjectID int) ([]*response.ScheduleResponse, error)
 	Delete(ctx context.Context, id int) error
 	Update(ctx context.Context, schedule *dto.ScheduleDTO, id int) (*response.ScheduleResponse, error)
+	GetScheduleByday(ctx context.Context, teacherID int) (map[string]interface{}, error)
 }
 
 type scheduleService struct {
@@ -125,4 +128,29 @@ func (s *scheduleService) Update(ctx context.Context, schedule *dto.ScheduleDTO,
 	}
 
 	return response.ToScheduleResponse(*updatedSchedule), nil
+}
+
+func (s *scheduleService) GetScheduleByday(ctx context.Context, teacherID int) (map[string]interface{}, error) {
+
+	dayOfWeek := int(time.Now().Weekday())
+
+	// fmt.Println("hari ini ", dayOfWeek)
+
+	schedules, err := s.scheduleRepo.GetScheduleByday(ctx, dayOfWeek, teacherID)
+	if err != nil {
+		return nil, err
+	}
+
+	fmt.Println(schedules)
+
+	res := make(map[string]interface{})
+	for _, schedule := range schedules {
+		res["id"] = schedule.ID
+		res["classroom_name"] = schedule.ClassroomSubject.Classroom.Name
+		res["subject_name"] = schedule.ClassroomSubject.Subject.Name
+		res["start_time"] = schedule.StartTime
+		res["end_time"] = schedule.EndTime
+	}
+
+	return res, nil
 }
