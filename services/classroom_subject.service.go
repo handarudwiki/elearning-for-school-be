@@ -15,6 +15,7 @@ type ClassroomSubjectService interface {
 	FindByTeacherID(ctx context.Context, teacherID int) (res []response.ClassroomSubjectResponse, err error)
 	Create(ctx context.Context, dto dto.CreateClassrooomSubject) (res response.ClassroomSubjectResponse, err error)
 	Delete(ctx context.Context, id int) error
+	FindByID(ctx context.Context, id int) (res response.ClassroomSubjectResponse, err error)
 }
 
 type classroomSubjectService struct {
@@ -91,4 +92,20 @@ func (s *classroomSubjectService) Delete(ctx context.Context, id int) error {
 	}
 
 	return nil
+}
+
+func (s *classroomSubjectService) FindByID(ctx context.Context, id int) (res response.ClassroomSubjectResponse, err error) {
+	classroomSubject, err := s.classroomSubjectRepo.FindByID(ctx, id)
+
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		return res, err
+	}
+
+	if err != nil {
+		return res, commons.ErrNotFound
+	}
+
+	res = response.ToClassroomSubjectResponse(classroomSubject)
+
+	return res, nil
 }

@@ -18,6 +18,7 @@ var ErrToResponseCode = map[error]int{
 	commons.ErrNotFound:       http.StatusNotFound,
 	commons.ErrConflict:       http.StatusConflict,
 	commons.ErrInternalServer: http.StatusInternalServerError,
+	commons.ErrInvalidInput:   http.StatusBadRequest,
 }
 
 func ResponseSuccess(data interface{}) response {

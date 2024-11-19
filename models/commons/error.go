@@ -7,4 +7,5 @@ var (
 	ErrNotFound       = errors.New("data not found")
 	ErrInternalServer = errors.New("internal server error")
 	ErrConflict       = errors.New("data already exists")
+	ErrInvalidInput   = errors.New("invalid input")
 )

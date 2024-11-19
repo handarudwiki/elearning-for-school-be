@@ -22,6 +22,7 @@ func NewSubject(db *gorm.DB) models.SubjectRepository {
 func (r *subjectRepository) FindByID(ctx context.Context, id int) (res *models.Subject, err error) {
 	var subject models.Subject
 	err = r.db.Where("id = ?", id).First(&subject).Error
+
 	if err != nil {
 		return nil, err
 	}
