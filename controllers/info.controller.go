@@ -7,6 +7,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/handarudwiki/helpers"
 	"github.com/handarudwiki/middlewares"
+	"github.com/handarudwiki/models/commons"
 	"github.com/handarudwiki/models/dto"
 	"github.com/handarudwiki/services"
 )
@@ -27,6 +28,7 @@ func NewInfo(app *fiber.App, jwtService services.JWTService, infoService service
 	infos.Get("/:id", infoContorller.FindById)
 	infos.Put("/:id", middlewares.CheckAuth(jwtService), infoContorller.Update)
 	infos.Delete("/:id", middlewares.CheckAuth(jwtService), infoContorller.Delete)
+	infos.Get("/", infoContorller.FindAll)
 }
 
 func (c *infoController) Create(ctx *fiber.Ctx) error {
@@ -147,5 +149,31 @@ func (c *infoController) Delete(ctx *fiber.Ctx) error {
 
 	return ctx.Status(fiber.StatusOK).JSON(
 		helpers.ResponseSuccess("Success delete classroom"),
+	)
+}
+
+func (c *infoController) FindAll(ctx *fiber.Ctx) error {
+	var queryDTO dto.QueryDTO
+
+	page, size := helpers.GetPaginationParams(ctx, commons.DEFAULTPAGE, commons.DEFAULTSIZE)
+
+	queryDTO.Page = page
+	queryDTO.Size = size
+
+	search := ctx.Query("search")
+
+	queryDTO.Search = &search
+
+	infos, totalPages, err := c.infoService.FindAll(ctx.Context(), queryDTO)
+
+	if err != nil {
+		httpCode := helpers.GetHttpStatusCode(err)
+		return ctx.Status(httpCode).JSON(
+			helpers.ResponseError(err.Error()),
+		)
+	}
+
+	return ctx.Status(fiber.StatusOK).JSON(
+		helpers.ResponsePagination(infos, totalPages),
 	)
 }

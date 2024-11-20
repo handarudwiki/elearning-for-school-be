@@ -3,6 +3,8 @@ package models
 import (
 	"context"
 	"time"
+
+	"github.com/handarudwiki/models/dto"
 )
 
 type Info struct {
@@ -22,4 +24,5 @@ type InfoRepository interface {
 	FindByID(ctx context.Context, id int) (*Info, error)
 	Update(ctx context.Context, id int, info *Info) (*Info, error)
 	Delete(ctx context.Context, id int) error
+	FindAll(ctx context.Context, dto dto.QueryDTO) ([]*Info, int, error)
 }

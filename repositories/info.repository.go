@@ -2,8 +2,11 @@ package repositories
 
 import (
 	"context"
+	"math"
 
+	"github.com/handarudwiki/helpers"
 	"github.com/handarudwiki/models"
+	"github.com/handarudwiki/models/dto"
 	"gorm.io/gorm"
 )
 
@@ -57,4 +60,24 @@ func (r *infoRepository) Delete(ctx context.Context, id int) error {
 	}
 
 	return nil
+}
+
+func (r *infoRepository) FindAll(ctx context.Context, dto dto.QueryDTO) ([]*models.Info, int, error) {
+	var infos []*models.Info
+
+	err := r.db.WithContext(ctx).
+		Scopes(helpers.SearchTitle(*dto.Search)).
+		Find(&infos).Error
+
+	if err != nil {
+		return nil, 0, err
+	}
+
+	totalPages := math.Ceil(float64(len(infos)) / float64(dto.Size))
+
+	if err != nil {
+		return nil, 0, err
+	}
+
+	return infos, int(totalPages), err
 }
