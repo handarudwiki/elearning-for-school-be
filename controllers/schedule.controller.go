@@ -25,7 +25,8 @@ func NewScheduleController(app *fiber.App, scheduleService services.ScheduleServ
 	schedules := app.Group("/api/v1/schedules")
 	schedules.Get("/today", middlewares.CheckAuth(jwtService), schedule.SchduleToday)
 	schedules.Post("/", middlewares.CheckAuth(jwtService), schedule.Create)
-	schedules.Get("/:id", schedule.GetByID)
+	schedules.Get("/:id/show", schedule.GetByID)
+	schedules.Get("/:classroomID", middlewares.CheckAuth(jwtService), schedule.GetScheduleByday)
 	schedules.Get("/classroom-subject/:classroomSubjectID", schedule.GetByClassroomSubjectID)
 	schedules.Put("/:id", middlewares.CheckAuth(jwtService), schedule.Update)
 	schedules.Delete("/:id", middlewares.CheckAuth(jwtService), schedule.Delete)
@@ -170,11 +171,28 @@ func (c *ScheduleController) SchduleToday(ctx *fiber.Ctx) error {
 
 	userId := ctx.Locals("userId").(int)
 
-	fmt.Println("user id", userId)
+	res, err := c.scheduleService.GetScheduleByday(ctx.Context(), userId)
+	if err != nil {
+		statusCode := helpers.GetHttpStatusCode(err)
+
+		return ctx.Status(statusCode).JSON(
+			helpers.ResponseError(err.Error()),
+		)
+	}
+
+	return ctx.Status(fiber.StatusOK).JSON(
+		helpers.ResponseSuccess(res),
+	)
+}
+
+func (c *ScheduleController) GetScheduleByday(ctx *fiber.Ctx) error {
+	userId := ctx.Locals("userId").(int)
 
 	fmt.Println(userId)
 
-	res, err := c.scheduleService.GetScheduleByday(ctx.Context(), userId)
+	classroomID, err := strconv.Atoi(ctx.Params("classroomID"))
+
+	res, err := c.scheduleService.GetScheduleClassroomDay(ctx.Context(), classroomID, &userId)
 	if err != nil {
 		statusCode := helpers.GetHttpStatusCode(err)
 

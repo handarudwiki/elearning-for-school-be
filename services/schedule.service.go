@@ -19,7 +19,8 @@ type ScheduleService interface {
 	GetByClassroomSubjectID(ctx context.Context, classroomSubjectID int) ([]*response.ScheduleResponse, error)
 	Delete(ctx context.Context, id int) error
 	Update(ctx context.Context, schedule *dto.ScheduleDTO, id int) (*response.ScheduleResponse, error)
-	GetScheduleByday(ctx context.Context, teacherID int) (map[string]interface{}, error)
+	GetScheduleByday(ctx context.Context, teacherID int) ([]map[string]interface{}, error)
+	GetScheduleClassroomDay(ctx context.Context, classroomID int, teacherId *int) ([]map[string]interface{}, error)
 }
 
 type scheduleService struct {
@@ -130,7 +131,7 @@ func (s *scheduleService) Update(ctx context.Context, schedule *dto.ScheduleDTO,
 	return response.ToScheduleResponse(*updatedSchedule), nil
 }
 
-func (s *scheduleService) GetScheduleByday(ctx context.Context, teacherID int) (map[string]interface{}, error) {
+func (s *scheduleService) GetScheduleByday(ctx context.Context, teacherID int) ([]map[string]interface{}, error) {
 
 	dayOfWeek := int(time.Now().Weekday())
 
@@ -143,13 +144,48 @@ func (s *scheduleService) GetScheduleByday(ctx context.Context, teacherID int) (
 
 	fmt.Println(schedules)
 
-	res := make(map[string]interface{})
+	var res []map[string]interface{}
+
 	for _, schedule := range schedules {
-		res["id"] = schedule.ID
-		res["classroom_name"] = schedule.ClassroomSubject.Classroom.Name
-		res["subject_name"] = schedule.ClassroomSubject.Subject.Name
-		res["start_time"] = schedule.StartTime
-		res["end_time"] = schedule.EndTime
+		item := map[string]interface{}{
+			"id":             schedule.ID,
+			"classroom_name": schedule.ClassroomSubject.Classroom.Name,
+			"subject_name":   schedule.ClassroomSubject.Subject.Name,
+			"start_time":     schedule.StartTime,
+			"end_time":       schedule.EndTime,
+		}
+		res = append(res, item)
+	}
+
+	return res, nil
+}
+
+func (s *scheduleService) GetScheduleClassroomDay(ctx context.Context, classroomID int, teacherId *int) (res []map[string]interface{}, err error) {
+	var schedules []*models.Schedule
+
+	dayOfWeek := int(time.Now().Weekday())
+
+	fmt.Println("hari ini ", dayOfWeek)
+
+	if *teacherId == 1 {
+		schedules, err = s.scheduleRepo.GetdataSchedulesClassroomDay(ctx, dayOfWeek, classroomID, teacherId)
+	} else {
+		schedules, err = s.scheduleRepo.GetdataSchedulesClassroomDay(ctx, dayOfWeek, classroomID, nil)
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	for _, schedule := range schedules {
+		item := map[string]interface{}{
+			"id":             schedule.ID,
+			"classroom_name": schedule.ClassroomSubject.Classroom.Name,
+			"subject_name":   schedule.ClassroomSubject.Subject.Name,
+			"start_time":     schedule.StartTime,
+			"end_time":       schedule.EndTime,
+		}
+
+		res = append(res, item)
 	}
 
 	return res, nil
