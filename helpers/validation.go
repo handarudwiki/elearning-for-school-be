@@ -22,6 +22,11 @@ func validateTime(fl validator.FieldLevel) bool {
 	return err == nil
 }
 
+func dateFormat(fl validator.FieldLevel) bool {
+	_, err := time.Parse("2006-01-02", fl.Field().String())
+	return err == nil
+}
+
 var validate = validator.New()
 
 type ValidationError struct {
@@ -33,6 +38,7 @@ func ValidateRequest(req interface{}) []ValidationError {
 	var errors []ValidationError
 	validate.RegisterValidation("future_date", futureDate)
 	validate.RegisterValidation("time", validateTime)
+	validate.RegisterValidation("date", dateFormat)
 	err := validate.Struct(req)
 	fmt.Println(err)
 	if err != nil {
@@ -58,9 +64,11 @@ func GetErrorMessage(e validator.FieldError) (message string) {
 	case "max":
 		message = e.Field() + " max " + e.Param()
 	case "time":
-		fmt.Sprintf("%s must be a valid time in format HH:mm", e.Field())
+		message = fmt.Sprintf("%s must be a valid time in format HH:mm", e.Field())
 	case "future_date":
-		fmt.Sprintf("%s must be a valid future date", e.Field())
+		message = fmt.Sprintf("%s must be a valid future date", e.Field())
+	case "date":
+		message = fmt.Sprintf("%s must be a valid date in format YYYY-MM-DD", e.Field())
 	default:
 		message = e.Field() + " is not valid"
 	}

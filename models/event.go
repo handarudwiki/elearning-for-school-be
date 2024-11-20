@@ -1,6 +1,9 @@
 package models
 
-import "time"
+import (
+	"context"
+	"time"
+)
 
 type Event struct {
 	ID        uint      `json:"id" gorm:"primary_key"`
@@ -13,4 +16,9 @@ type Event struct {
 	Time      string    `json:"time"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
+}
+
+type EventRepository interface {
+	Create(ctx context.Context, event *Event) (*Event, error)
+	FindByID(ctx context.Context, id int) (*Event, error)
 }
