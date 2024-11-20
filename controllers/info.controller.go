@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"strconv"
 
 	"github.com/gofiber/fiber/v2"
@@ -24,6 +25,8 @@ func NewInfo(app *fiber.App, jwtService services.JWTService, infoService service
 	infos := app.Group("/api/v1/infos")
 	infos.Post("/", middlewares.CheckAuth(jwtService), infoContorller.Create)
 	infos.Get("/:id", infoContorller.FindById)
+	infos.Put("/:id", middlewares.CheckAuth(jwtService), infoContorller.Update)
+	infos.Delete("/:id", middlewares.CheckAuth(jwtService), infoContorller.Delete)
 }
 
 func (c *infoController) Create(ctx *fiber.Ctx) error {
@@ -79,5 +82,70 @@ func (c *infoController) FindById(ctx *fiber.Ctx) error {
 
 	return ctx.Status(fiber.StatusOK).JSON(
 		helpers.ResponseSuccess(res),
+	)
+}
+
+func (c *infoController) Update(ctx *fiber.Ctx) error {
+	id, err := ctx.ParamsInt("id")
+
+	if err != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(
+			helpers.ResponseError(err.Error()),
+		)
+	}
+
+	var infoDto dto.InfoDto
+
+	if err = ctx.BodyParser(&infoDto); err != nil {
+		return ctx.Status(fiber.StatusUnprocessableEntity).JSON(
+			helpers.ResponseError(err.Error()),
+		)
+	}
+	fmt.Printf("ID: %v\n", id)
+
+	validationErrors := helpers.ValidateRequest(infoDto)
+
+	if len(validationErrors) > 0 {
+		return ctx.Status(fiber.StatusBadRequest).JSON(
+			helpers.ResponseErrorWithData("Validation errors", validationErrors),
+		)
+	}
+
+	infoDto.UserID = uint(ctx.Locals("userId").(int))
+
+	classroomResponse, err := c.infoService.Update(ctx.Context(), &infoDto, id)
+
+	if err != nil {
+		httpCode := helpers.GetHttpStatusCode(err)
+		return ctx.Status(httpCode).JSON(
+			helpers.ResponseError(err.Error()),
+		)
+	}
+
+	return ctx.Status(fiber.StatusOK).JSON(
+		helpers.ResponseSuccess(classroomResponse),
+	)
+}
+
+func (c *infoController) Delete(ctx *fiber.Ctx) error {
+	id, err := ctx.ParamsInt("id")
+
+	if err != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(
+			helpers.ResponseError(err.Error()),
+		)
+	}
+
+	err = c.infoService.Delete(ctx.Context(), id)
+
+	if err != nil {
+		httpCode := helpers.GetHttpStatusCode(err)
+		return ctx.Status(httpCode).JSON(
+			helpers.ResponseError(err.Error()),
+		)
+	}
+
+	return ctx.Status(fiber.StatusOK).JSON(
+		helpers.ResponseSuccess("Success delete classroom"),
 	)
 }

@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/handarudwiki/models"
 	"github.com/handarudwiki/models/dto"
@@ -13,6 +14,8 @@ import (
 type InfoService interface {
 	FindById(ctx context.Context, id int) (res *response.InfoResponse, err error)
 	Create(ctx context.Context, info *dto.InfoDto) (res *response.InfoResponse, err error)
+	Update(ctx context.Context, info *dto.InfoDto, id int) (res *response.InfoResponse, err error)
+	Delete(ctx context.Context, id int) error
 }
 
 type infoService struct {
@@ -56,4 +59,46 @@ func (s *infoService) FindById(ctx context.Context, id int) (res *response.InfoR
 	res = response.ToInfoResponse(info)
 
 	return res, nil
+}
+
+func (s *infoService) Update(ctx context.Context, dto *dto.InfoDto, id int) (res *response.InfoResponse, err error) {
+	info := &models.Info{
+		Title:    dto.Title,
+		Body:     dto.Body,
+		UserID:   int(dto.UserID),
+		Status:   dto.Status,
+		Settings: dto.Settings,
+	}
+
+	info, err = s.infoRepo.Update(ctx, id, info)
+
+	if err != nil {
+		return res, err
+	}
+
+	fmt.Println(info.ID)
+
+	res = response.ToInfoResponse(info)
+
+	return res, nil
+}
+
+func (s *infoService) Delete(ctx context.Context, id int) error {
+	// _, err := s.infoRepo.FindByID(ctx, id)
+
+	// if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+	// 	return err
+	// }
+
+	// if err != nil {
+	// 	return commons.ErrNotFound
+	// }
+
+	err := s.infoRepo.Delete(ctx, id)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
