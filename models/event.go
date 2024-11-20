@@ -3,6 +3,8 @@ package models
 import (
 	"context"
 	"time"
+
+	"github.com/handarudwiki/models/dto"
 )
 
 type Event struct {
@@ -21,4 +23,7 @@ type Event struct {
 type EventRepository interface {
 	Create(ctx context.Context, event *Event) (*Event, error)
 	FindByID(ctx context.Context, id int) (*Event, error)
+	Update(ctx context.Context, event *Event, id int) (*Event, error)
+	Delete(ctx context.Context, id int) error
+	FindAll(ctx context.Context, dto dto.QueryDTO) ([]*Event, int, error)
 }
