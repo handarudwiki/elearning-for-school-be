@@ -22,4 +22,6 @@ type Standart struct {
 type StandartRepository interface {
 	Create(ctx context.Context, standart *Standart) (*Standart, error)
 	FindByID(ctx context.Context, id int) (*Standart, error)
+	Update(ctx context.Context, standart *Standart, id int) (*Standart, error)
+	Delete(ctx context.Context, id int) error
 }

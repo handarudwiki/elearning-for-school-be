@@ -14,6 +14,8 @@ import (
 type StandartService interface {
 	Create(ctx context.Context, dto *dto.StandartDTO) (res *response.StandartResponse, err error)
 	FindById(ctx context.Context, id int) (res *response.StandartResponse, err error)
+	Update(ctx context.Context, dto *dto.StandartDTO, id int) (res *response.StandartResponse, err error)
+	Delete(ctx context.Context, id int) error
 }
 
 type standartService struct {
@@ -66,13 +68,53 @@ func (s *standartService) FindById(ctx context.Context, id int) (res *response.S
 		return nil, commons.ErrNotFound
 	}
 
-	res = &response.StandartResponse{
-		ID:        standart.ID,
-		SubjectID: standart.SubjectID,
-		Type:      standart.Type,
-		Body:      standart.Body,
-		Code:      standart.Code,
-	}
+	res = response.ToStandartResponse(standart)
 
 	return res, nil
+}
+
+func (s *standartService) Update(ctx context.Context, dto *dto.StandartDTO, id int) (res *response.StandartResponse, err error) {
+	standart, err := s.standartRepo.FindByID(ctx, id)
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, err
+	}
+
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, commons.ErrNotFound
+	}
+
+	standart.SubjectID = dto.SubjectID
+	standart.Type = dto.Type
+	standart.Body = dto.Body
+	standart.Code = dto.Code
+	standart.StandartID = dto.StandartID
+	standart.TeacherID = dto.TeacherID
+
+	standart, err = s.standartRepo.Update(ctx, standart, id)
+	if err != nil {
+		return nil, err
+	}
+	standart.ID = uint(id)
+
+	res = response.ToStandartResponse(standart)
+
+	return res, nil
+}
+
+func (s *standartService) Delete(ctx context.Context, id int) error {
+	_, err := s.standartRepo.FindByID(ctx, id)
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		return err
+	}
+
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return commons.ErrNotFound
+	}
+
+	err = s.standartRepo.Delete(ctx, id)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
