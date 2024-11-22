@@ -3,8 +3,11 @@ package repositories
 import (
 	"context"
 	"fmt"
+	"math"
 
+	"github.com/handarudwiki/helpers"
 	"github.com/handarudwiki/models"
+	"github.com/handarudwiki/models/dto"
 	"gorm.io/gorm"
 )
 
@@ -56,4 +59,23 @@ func (r *standartRepository) Delete(ctx context.Context, id int) error {
 	}
 
 	return nil
+}
+
+func (r *standartRepository) FindAll(ctx context.Context, dto *dto.QueryDTO) ([]*models.Standart, int, error) {
+	var standarts []*models.Standart
+	var count int64
+
+	err := r.db.Scopes(helpers.Paginate(dto.Page, dto.Size)).Preload("Teacher").Preload("Subject").Find(&standarts).Error
+	if err != nil {
+		return nil, 0, err
+	}
+
+	err = r.db.Model(&models.Standart{}).Count(&count).Error
+	if err != nil {
+		return nil, 0, err
+	}
+
+	totalPage := math.Ceil(float64(count) / float64(dto.Size))
+
+	return standarts, int(totalPage), nil
 }

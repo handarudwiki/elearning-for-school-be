@@ -3,6 +3,8 @@ package models
 import (
 	"context"
 	"time"
+
+	"github.com/handarudwiki/models/dto"
 )
 
 type Standart struct {
@@ -24,4 +26,5 @@ type StandartRepository interface {
 	FindByID(ctx context.Context, id int) (*Standart, error)
 	Update(ctx context.Context, standart *Standart, id int) (*Standart, error)
 	Delete(ctx context.Context, id int) error
+	FindAll(ctx context.Context, dto *dto.QueryDTO) ([]*Standart, int, error)
 }

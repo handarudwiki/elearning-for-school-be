@@ -16,6 +16,7 @@ type StandartService interface {
 	FindById(ctx context.Context, id int) (res *response.StandartResponse, err error)
 	Update(ctx context.Context, dto *dto.StandartDTO, id int) (res *response.StandartResponse, err error)
 	Delete(ctx context.Context, id int) error
+	FindAll(ctx context.Context, query *dto.QueryDTO) (res []*response.StandartResponse, page commons.Paginate, err error)
 }
 
 type standartService struct {
@@ -117,4 +118,21 @@ func (s *standartService) Delete(ctx context.Context, id int) error {
 	}
 
 	return nil
+}
+
+func (s *standartService) FindAll(ctx context.Context, query *dto.QueryDTO) (res []*response.StandartResponse, page commons.Paginate, err error) {
+	standarts, total, err := s.standartRepo.FindAll(ctx, query)
+	if err != nil {
+		return nil, page, err
+	}
+
+	res = response.ToStandartResponseSlice(standarts)
+
+	page = commons.ToPaginate(
+		query.Page,
+		query.Size,
+		total,
+	)
+
+	return res, page, nil
 }

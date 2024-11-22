@@ -7,6 +7,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/handarudwiki/helpers"
 	"github.com/handarudwiki/middlewares"
+	"github.com/handarudwiki/models/commons"
 	"github.com/handarudwiki/models/dto"
 	"github.com/handarudwiki/services"
 )
@@ -27,6 +28,7 @@ func NewStandartController(app *fiber.App, standartService services.StandartServ
 	standarts.Get("/:id", standart.GetStandart)
 	standarts.Put("/:id", middlewares.CheckAuth(jwtService), standart.Update)
 	standarts.Delete("/:id", middlewares.CheckAuth(jwtService), standart.DeleteStandart)
+	standarts.Get("/", standart.FindALl)
 }
 
 func (c *StandartController) CreateStandart(ctx *fiber.Ctx) error {
@@ -147,5 +149,27 @@ func (c *StandartController) DeleteStandart(ctx *fiber.Ctx) error {
 
 	return ctx.Status(fiber.StatusOK).JSON(
 		helpers.ResponseSuccess("Success delete standart"),
+	)
+}
+
+func (c *StandartController) FindALl(ctx *fiber.Ctx) error {
+	dto := new(dto.QueryDTO)
+
+	page, size := helpers.GetPaginationParams(ctx, commons.DEFAULTPAGE, commons.DEFAULTSIZE)
+
+	dto.Page = page
+	dto.Size = size
+
+	res, count, err := c.standartService.FindAll(ctx.Context(), dto)
+	if err != nil {
+		statusCode := helpers.GetHttpStatusCode(err)
+
+		return ctx.Status(statusCode).JSON(
+			helpers.ResponseError(err.Error()),
+		)
+	}
+
+	return ctx.Status(fiber.StatusOK).JSON(
+		helpers.ResponsePagination(res, count),
 	)
 }
