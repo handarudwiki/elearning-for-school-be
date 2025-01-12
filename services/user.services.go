@@ -21,6 +21,8 @@ type UserService interface {
 	GetAllStudent(ctx context.Context, dto dto.QueryDTO) (res []response.UserResponse, page commons.Paginate, err error)
 	GetJwtService() JWTService
 	GetUser(ctx context.Context, id int) (res response.UserResponse, err error)
+	Delete(ctx context.Context, id int) error
+	Update(ctx context.Context, id int, dto dto.UpdateUserDTO) (res response.UserResponse, err error)
 }
 
 type userService struct {
@@ -196,4 +198,51 @@ func (s *userService) GetUser(ctx context.Context, id int) (res response.UserRes
 
 func (s *userService) GetJwtService() JWTService {
 	return s.jwtService
+}
+
+func (s *userService) Delete(ctx context.Context, id int) error {
+
+	_, err := s.userRepo.FindByUID(ctx, id)
+
+	if err == gorm.ErrRecordNotFound {
+		return commons.ErrNotFound
+	}
+
+	if err != nil {
+		return err
+	}
+
+	err = s.userRepo.Delete(ctx, id)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *userService) Update(ctx context.Context, id int, dto dto.UpdateUserDTO) (res response.UserResponse, err error) {
+	user, err := s.userRepo.FindByUID(ctx, id)
+
+	if err == gorm.ErrRecordNotFound {
+		err = commons.ErrNotFound
+		return
+	}
+
+	if err != nil {
+		return
+	}
+
+	user.Name = dto.Name
+	user.Details = dto.Details
+	user.IsActive = dto.IsActive
+	user.Role = dto.Role
+
+	user, err = s.userRepo.Update(ctx, id, user)
+	if err != nil {
+		return
+	}
+
+	res = response.ToUserResponse(user)
+
+	return
 }

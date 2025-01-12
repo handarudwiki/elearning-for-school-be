@@ -54,7 +54,7 @@ func (r *UserRepository) Create(ctx context.Context, user *models.User) (*models
 }
 
 func (r *UserRepository) Update(ctx context.Context, id int, user *models.User) (*models.User, error) {
-	err := r.db.Model(&models.User{}).Where("id = ?", id).Updates(user).Error
+	err := r.db.Model(&models.User{}).Where("id = ?", id).Updates(user).Update("is_active", user.IsActive).Error
 	if err != nil {
 		return nil, err
 	}
@@ -63,7 +63,7 @@ func (r *UserRepository) Update(ctx context.Context, id int, user *models.User) 
 }
 
 func (r *UserRepository) Delete(ctx context.Context, id int) error {
-	err := r.db.Where("id = ?").Delete(&models.User{}).Error
+	err := r.db.Where("id = ?", id).Delete(&models.User{}).Error
 	if err != nil {
 		return err
 	}

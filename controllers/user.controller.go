@@ -32,6 +32,8 @@ func NewUser(app *fiber.App, userService services.UserService) {
 	users.Get("/teacher", middlewares.CheckAuth(userService.GetJwtService()), controller.GetAllTeacher)
 	users.Get("/student", middlewares.CheckAuth(userService.GetJwtService()), controller.GetAllStudent)
 	users.Get("/single/:id", middlewares.CheckAuth(userService.GetJwtService()), controller.GetSingle)
+	users.Delete("/:id", middlewares.CheckAuth(userService.GetJwtService()), controller.Delete)
+	users.Put("/:id", middlewares.CheckAuth(userService.GetJwtService()), controller.Update)
 
 }
 
@@ -201,6 +203,65 @@ func (c *userController) GetSingle(ctx *fiber.Ctx) (err error) {
 
 	userResponse, err := c.userService.GetUser(ctx.Context(), id)
 
+	if err != nil {
+		httpCode := helpers.GetHttpStatusCode(err)
+		return ctx.Status(httpCode).JSON(
+			helpers.ResponseError(err.Error()),
+		)
+	}
+
+	return ctx.Status(fiber.StatusOK).JSON(
+		helpers.ResponseSuccess(userResponse),
+	)
+}
+
+func (c *userController) Delete(ctx *fiber.Ctx) (err error) {
+	id, err := strconv.Atoi(ctx.Params("id"))
+
+	if err != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(
+			helpers.ResponseError(err.Error()),
+		)
+	}
+
+	err = c.userService.Delete(ctx.Context(), id)
+
+	if err != nil {
+		httpCode := helpers.GetHttpStatusCode(err)
+		return ctx.Status(httpCode).JSON(
+			helpers.ResponseError(err.Error()),
+		)
+	}
+
+	return ctx.Status(fiber.StatusOK).JSON(
+		helpers.ResponseSuccess("User deleted"),
+	)
+}
+
+func (c *userController) Update(ctx *fiber.Ctx) (err error) {
+	id, err := strconv.Atoi(ctx.Params("id"))
+
+	if err != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(
+			helpers.ResponseError(err.Error()),
+		)
+	}
+
+	var updateUserDto dto.UpdateUserDTO
+	if err = ctx.BodyParser(&updateUserDto); err != nil {
+		return ctx.Status(fiber.StatusUnprocessableEntity).JSON(
+			helpers.ResponseError(err.Error()),
+		)
+	}
+
+	validationErrors := helpers.ValidateRequest(updateUserDto)
+	if len(validationErrors) > 0 {
+		return ctx.Status(fiber.StatusBadRequest).JSON(
+			helpers.ResponseErrorWithData("Validation errors", validationErrors),
+		)
+	}
+
+	userResponse, err := c.userService.Update(ctx.Context(), id, updateUserDto)
 	if err != nil {
 		httpCode := helpers.GetHttpStatusCode(err)
 		return ctx.Status(httpCode).JSON(
