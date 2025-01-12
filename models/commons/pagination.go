@@ -1,5 +1,7 @@
 package commons
 
+import "math"
+
 const (
 	DEFAULTSIZE int = 10
 	DEFAULTPAGE int = 1
@@ -11,10 +13,10 @@ type Paginate struct {
 	TotalPage int `json:"totalPage"`
 }
 
-func ToPaginate(page int, size int, totalPage int) Paginate {
+func ToPaginate(page int, size int, totalData int) Paginate {
 	return Paginate{
 		Page:      page,
 		Size:      size,
-		TotalPage: totalPage,
+		TotalPage: int(math.Ceil(float64(totalData) / float64(size))),
 	}
 }

@@ -4,6 +4,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/handarudwiki/helpers"
 	"github.com/handarudwiki/middlewares"
+	"github.com/handarudwiki/models/commons"
 	"github.com/handarudwiki/models/dto"
 	"github.com/handarudwiki/services"
 )
@@ -21,6 +22,7 @@ func NewLectureCommentController(app *fiber.App, lectureCommentService services.
 
 	lectureComments := app.Group("/api/v1/lecture-comments")
 	lectureComments.Post("/", middlewares.CheckAuth(jwtService), lectureCommentController.Create)
+	lectureComments.Get("/:lectureID", lectureCommentController.FindAll)
 
 	return &lectureCommentController
 }
@@ -55,5 +57,29 @@ func (c *lectureCommentController) Create(ctx *fiber.Ctx) (err error) {
 
 	return ctx.Status(fiber.StatusCreated).JSON(
 		helpers.ResponseErrorWithData("Success create lecture comment", lectureCommentResponse),
+	)
+}
+
+func (c *lectureCommentController) FindAll(ctx *fiber.Ctx) (err error) {
+	lectureID, err := ctx.ParamsInt("lectureID")
+	if err != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(
+			helpers.ResponseError(err.Error()),
+		)
+	}
+
+	page, size := helpers.GetPaginationParams(ctx, commons.DEFAULTPAGE, commons.DEFAULTSIZE)
+
+	lectureCommentResponses, paginate, err := c.lectureCommentService.FindAll(ctx.Context(), lectureID, dto.QueryDTO{Page: page, Size: size})
+
+	if err != nil {
+		httpCode := helpers.GetHttpStatusCode(err)
+		return ctx.Status(httpCode).JSON(
+			helpers.ResponseError(err.Error()),
+		)
+	}
+
+	return ctx.Status(fiber.StatusOK).JSON(
+		helpers.ResponsePagination(lectureCommentResponses, paginate),
 	)
 }

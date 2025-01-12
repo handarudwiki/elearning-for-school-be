@@ -37,3 +37,12 @@ func FilterRole(role *int) func(*gorm.DB) *gorm.DB {
 		return db
 	}
 }
+
+// func FilterLectureID(lectureID *int) func(*gorm.DB) *gorm.DB {
+// 	return func(db *gorm.DB) *gorm.DB {
+// 		if lectureID != nil {
+// 			return db.Where("lecture_id = ?", lectureID) // Return the DB without additional filtering if no query is provided.
+// 		}
+// 		return db
+// 	}
+// }
