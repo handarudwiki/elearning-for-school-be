@@ -30,6 +30,7 @@ func main() {
 	eventRepository := repositories.NewEvent(db)
 	standrtRepository := repositories.NewStandart(db)
 	lectureCommentRepository := repositories.NewLectureComment(db)
+	abcentRepository := repositories.NewAbcent(db)
 
 	//services
 	jwtService := services.NewJWT(config.JWT)
@@ -45,6 +46,7 @@ func main() {
 	eventService := services.NewEvent(eventRepository)
 	standartService := services.NewStandart(standrtRepository, subjectService)
 	lectureCommentService := services.NewLectureComment(lectureCommentRepository, lectureService)
+	abcentService := services.NewAbcent(abcentRepository)
 
 	app := fiber.New(fiber.Config{
 		AppName: "Elearning nih bos",
@@ -65,6 +67,7 @@ func main() {
 	controllers.NewEvent(app, eventService, jwtService)
 	controllers.NewStandartController(app, standartService, jwtService)
 	controllers.NewLectureCommentController(app, lectureCommentService, jwtService)
+	controllers.NewAbcent(app, abcentService, jwtService)
 
 	app.Listen(":" + config.Server.Port)
 }
