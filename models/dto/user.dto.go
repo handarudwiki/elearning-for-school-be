@@ -15,3 +15,9 @@ type UpdateUserDTO struct {
 	Role     int    `json:"role"`
 	IsActive bool   `json:"is_active"`
 }
+
+type UpdateCurrentUserDTO struct {
+	Name    string `json:"name"`
+	Details string `json:"details"`
+	Email   string `json:"email" validate:"email"`
+}

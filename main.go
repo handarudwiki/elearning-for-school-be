@@ -29,6 +29,7 @@ func main() {
 	infoRepository := repositories.NewInfo(db)
 	eventRepository := repositories.NewEvent(db)
 	standrtRepository := repositories.NewStandart(db)
+	lectureCommentRepository := repositories.NewLectureComment(db)
 
 	//services
 	jwtService := services.NewJWT(config.JWT)
@@ -43,10 +44,13 @@ func main() {
 	infoService := services.NewInfo(infoRepository)
 	eventService := services.NewEvent(eventRepository)
 	standartService := services.NewStandart(standrtRepository, subjectService)
+	lectureCommentService := services.NewLectureComment(lectureCommentRepository, lectureService)
 
 	app := fiber.New(fiber.Config{
 		AppName: "Elearning nih bos",
 	})
+
+	app.Static("/storage", "./public/uploads")
 
 	//controllers
 	controllers.NewUser(app, userService)
@@ -60,6 +64,7 @@ func main() {
 	controllers.NewInfo(app, jwtService, infoService)
 	controllers.NewEvent(app, eventService, jwtService)
 	controllers.NewStandartController(app, standartService, jwtService)
+	controllers.NewLectureCommentController(app, lectureCommentService, jwtService)
 
 	app.Listen(":" + config.Server.Port)
 }
