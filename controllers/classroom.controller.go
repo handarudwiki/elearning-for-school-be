@@ -32,6 +32,7 @@ func NewClassroom(app *fiber.App, classroomService services.ClassroomService, jw
 	classroomStudent := app.Group("/api/v1/classroom-student")
 	classroomStudent.Post("/", middlewares.CheckAuth(classroomController.JwtService), classroomController.AssignStudentClassroom)
 	classroomStudent.Get("/:classroom_id", classroomController.GetClassroomStudent)
+	classroomStudent.Delete("/:student_id", middlewares.CheckAuth(classroomController.JwtService), classroomController.UnassignStudentClassroom)
 }
 
 func (c *classroomController) Create(ctx *fiber.Ctx) (err error) {
@@ -278,5 +279,28 @@ func (c classroomController) CreateMine(ctx *fiber.Ctx) error {
 
 	return ctx.Status(fiber.StatusCreated).JSON(
 		helpers.ResponseSuccess(classroomResponse),
+	)
+}
+
+func (c classroomController) UnassignStudentClassroom(ctx *fiber.Ctx) error {
+	studentID, err := ctx.ParamsInt("student_id")
+
+	if err != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(
+			helpers.ResponseError(err.Error()),
+		)
+	}
+
+	err = c.classroomService.UnassignStudentClassroom(ctx.Context(), uint(studentID))
+
+	if err != nil {
+		httpCode := helpers.GetHttpStatusCode(err)
+		return ctx.Status(httpCode).JSON(
+			helpers.ResponseError(err.Error()),
+		)
+	}
+
+	return ctx.Status(fiber.StatusOK).JSON(
+		helpers.ResponseSuccess("Unassigned successfully"),
 	)
 }

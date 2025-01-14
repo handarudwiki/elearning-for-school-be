@@ -18,4 +18,5 @@ type ClassroomStudent struct {
 type ClassroomStudentRepository interface {
 	FindByClassroomID(ctx context.Context, classroomID int) ([]*ClassroomStudent, error)
 	Create(ctx context.Context, classroomStudent *ClassroomStudent) (*ClassroomStudent, error)
+	Delete(ctx context.Context, id uint) error
 }

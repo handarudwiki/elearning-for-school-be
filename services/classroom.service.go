@@ -19,6 +19,7 @@ type ClassroomService interface {
 	FindAll(ctx context.Context, dto dto.QueryDTO) (res []response.ClassroomResponse, page commons.Paginate, err error)
 	FindClassroomStudent(ctx context.Context, classroomID int) (res []response.ClassroomStudentResponse, err error)
 	AssignStudentClassroom(ctx context.Context, dto dto.CreateClassroomStudentDTO) (res response.ClassroomStudentResponse, err error)
+	UnassignStudentClassroom(ctx context.Context, studentID uint) error
 	FindByTeacherID(ctx context.Context, teacherID int) (res []response.ClassroomResponse, err error)
 }
 
@@ -208,4 +209,13 @@ func (s *classroomService) FindByTeacherID(ctx context.Context, teacherID int) (
 	res = response.ToClassroomResponseSlice(classrooms)
 
 	return res, nil
+}
+
+func (s *classroomService) UnassignStudentClassroom(ctx context.Context, studentID uint) error {
+	err := s.classroomStudentRepo.Delete(ctx, studentID)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

@@ -35,3 +35,12 @@ func (r *clasroomStudentRepository) Create(ctx context.Context, classroomStudent
 
 	return classroomStudent, nil
 }
+
+func (r *clasroomStudentRepository) Delete(ctx context.Context, id uint) error {
+	err := r.db.Debug().Where("student_id = ?", id).Delete(&models.ClassroomStudent{}).Error
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
