@@ -31,13 +31,14 @@ func main() {
 	standrtRepository := repositories.NewStandart(db)
 	lectureCommentRepository := repositories.NewLectureComment(db)
 	abcentRepository := repositories.NewAbcent(db)
+	classroomStudentRepository := repositories.NewClassroomStudent(db)
 
 	//services
 	jwtService := services.NewJWT(config.JWT)
 	userService := services.NewUser(userRepository, jwtService)
 	subjectService := services.NewSubject(subjectRepository)
 	lectureService := services.NewLecture(lectureRepository)
-	classroomService := services.NewClassroom(classroomRepository, userRepository)
+	classroomService := services.NewClassroom(classroomRepository, userRepository, classroomStudentRepository)
 	taskService := services.NewTask(taskRepository, userService)
 	classroomTaskService := services.NewClassroomTask(classrooomTaskRepository, taskService, classroomService)
 	classroomSubjectService := services.NewClassroomSubject(classroomSubjectRepository, classroomService, subjectService)

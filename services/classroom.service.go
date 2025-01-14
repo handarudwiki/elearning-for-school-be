@@ -17,17 +17,21 @@ type ClassroomService interface {
 	Update(ctx context.Context, dto dto.UpdateClassroomDTO, id int) (res response.ClassroomResponse, err error)
 	Delete(ctx context.Context, id int) error
 	FindAll(ctx context.Context, dto dto.QueryDTO) (res []response.ClassroomResponse, page commons.Paginate, err error)
+	FindClassroomStudent(ctx context.Context, classroomID int) (res []response.ClassroomStudentResponse, err error)
+	AssignStudentClassroom(ctx context.Context, dto dto.CreateClassroomStudentDTO) (res response.ClassroomStudentResponse, err error)
 }
 
 type classroomService struct {
-	classroomRepo models.ClassroomRepository
-	userRepo      models.UserRepositoy
+	classroomRepo        models.ClassroomRepository
+	userRepo             models.UserRepositoy
+	classroomStudentRepo models.ClassroomStudentRepository
 }
 
-func NewClassroom(classroomRepo models.ClassroomRepository, userRepo models.UserRepositoy) ClassroomService {
+func NewClassroom(classroomRepo models.ClassroomRepository, userRepo models.UserRepositoy, classroomStudentRepo models.ClassroomStudentRepository) ClassroomService {
 	return &classroomService{
-		classroomRepo: classroomRepo,
-		userRepo:      userRepo,
+		classroomRepo:        classroomRepo,
+		userRepo:             userRepo,
+		classroomStudentRepo: classroomStudentRepo,
 	}
 }
 
@@ -145,4 +149,51 @@ func (s *classroomService) FindAll(ctx context.Context, dto dto.QueryDTO) (res [
 	res = response.ToClassroomResponseSlice(classrooms)
 
 	return res, page, nil
+}
+
+func (s *classroomService) FindClassroomStudent(ctx context.Context, classroomID int) (res []response.ClassroomStudentResponse, err error) {
+	classrooms, err := s.classroomStudentRepo.FindByClassroomID(ctx, classroomID)
+	if err != nil {
+		return res, err
+	}
+
+	res = response.ToClassroomStudentResponseSlice(classrooms)
+
+	return res, nil
+}
+
+func (s *classroomService) AssignStudentClassroom(ctx context.Context, dto dto.CreateClassroomStudentDTO) (res response.ClassroomStudentResponse, err error) {
+	_, err = s.classroomRepo.FindByID(ctx, dto.ClassroomID)
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		return
+	}
+
+	if err != nil {
+		err = commons.ErrNotFound
+		return
+	}
+
+	_, err = s.userRepo.FindByUID(ctx, dto.StudentID)
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		return
+	}
+
+	if err != nil {
+		err = commons.ErrNotFound
+		return
+	}
+
+	classroomStudent := &models.ClassroomStudent{
+		ClassroomID: uint(dto.ClassroomID),
+		StudentID:   uint(dto.StudentID),
+	}
+
+	_, err = s.classroomStudentRepo.Create(ctx, classroomStudent)
+	if err != nil {
+		return
+	}
+
+	res = response.ToClassroomStudentResponse(classroomStudent)
+
+	return
 }

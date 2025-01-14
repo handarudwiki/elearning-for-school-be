@@ -26,6 +26,10 @@ func NewClassroom(app *fiber.App, classroomService services.ClassroomService, jw
 	classrooms.Get("/", classroomController.GetAll)
 	classrooms.Put("/:id", middlewares.CheckAuth(classroomController.JwtService), classroomController.Update)
 	classrooms.Delete("/:id", middlewares.CheckAuth(classroomController.JwtService), classroomController.Delete)
+
+	classroomStudent := app.Group("/api/v1/classroom-student")
+	classroomStudent.Post("/", middlewares.CheckAuth(classroomController.JwtService), classroomController.AssignStudentClassroom)
+	classroomStudent.Get("/:classroom_id", classroomController.GetClassroomStudent)
 }
 
 func (c *classroomController) Create(ctx *fiber.Ctx) (err error) {
@@ -167,5 +171,59 @@ func (c *classroomController) Delete(ctx *fiber.Ctx) (err error) {
 
 	return ctx.Status(fiber.StatusOK).JSON(
 		helpers.ResponseSuccess("Deleted successfully"),
+	)
+}
+
+func (c *classroomController) AssignStudentClassroom(ctx *fiber.Ctx) error {
+	var assignStudentClassroomDTO dto.CreateClassroomStudentDTO
+
+	if err := ctx.BodyParser(&assignStudentClassroomDTO); err != nil {
+		return ctx.Status(fiber.StatusUnprocessableEntity).JSON(
+			helpers.ResponseError(err.Error()),
+		)
+	}
+
+	validationErrors := helpers.ValidateRequest(assignStudentClassroomDTO)
+
+	if len(validationErrors) > 0 {
+		return ctx.Status(fiber.StatusBadRequest).JSON(
+			helpers.ResponseErrorWithData("Validation errors", validationErrors),
+		)
+	}
+
+	res, err := c.classroomService.AssignStudentClassroom(ctx.Context(), assignStudentClassroomDTO)
+
+	if err != nil {
+		httpCode := helpers.GetHttpStatusCode(err)
+		return ctx.Status(httpCode).JSON(
+			helpers.ResponseError(err.Error()),
+		)
+	}
+
+	return ctx.Status(fiber.StatusOK).JSON(
+		helpers.ResponseSuccess(res),
+	)
+}
+
+func (c *classroomController) GetClassroomStudent(ctx *fiber.Ctx) error {
+	classroomID, err := ctx.ParamsInt("classroom_id")
+
+	if err != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(
+			helpers.ResponseError(err.Error()),
+		)
+	}
+
+	res, err := c.classroomService.FindClassroomStudent(ctx.Context(), classroomID)
+
+	if err != nil {
+		httpCode := helpers.GetHttpStatusCode(err)
+		return ctx.Status(httpCode).JSON(
+			helpers.ResponseError(err.Error()),
+		)
+	}
+
+	return ctx.Status(fiber.StatusOK).JSON(
+		helpers.ResponseSuccess(res),
 	)
 }
