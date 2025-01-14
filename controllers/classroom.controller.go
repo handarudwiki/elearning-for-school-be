@@ -22,6 +22,7 @@ func NewClassroom(app *fiber.App, classroomService services.ClassroomService, jw
 
 	classrooms := app.Group("/api/v1/classrooms")
 	classrooms.Get("/mine", middlewares.CheckAuth(classroomController.JwtService), classroomController.FindByTeacherID)
+	classrooms.Post("/mine", middlewares.CheckAuth(classroomController.JwtService), classroomController.CreateMine)
 	classrooms.Post("/", middlewares.CheckAuth(classroomController.JwtService), classroomController.Create)
 	classrooms.Get("/:id", classroomController.GetSingle)
 	classrooms.Get("/", classroomController.GetAll)
@@ -230,9 +231,9 @@ func (c *classroomController) GetClassroomStudent(ctx *fiber.Ctx) error {
 }
 
 func (c *classroomController) FindByTeacherID(ctx *fiber.Ctx) error {
-	teacherID := ctx.Locals("userId").(int)
+	teacherID := uint(ctx.Locals("userId").(int))
 
-	res, err := c.classroomService.FindByTeacherID(ctx.Context(), teacherID)
+	res, err := c.classroomService.FindByTeacherID(ctx.Context(), int(teacherID))
 
 	if err != nil {
 		httpCode := helpers.GetHttpStatusCode(err)
@@ -243,5 +244,39 @@ func (c *classroomController) FindByTeacherID(ctx *fiber.Ctx) error {
 
 	return ctx.Status(fiber.StatusOK).JSON(
 		helpers.ResponseSuccess(res),
+	)
+}
+
+func (c classroomController) CreateMine(ctx *fiber.Ctx) error {
+	var createClassroomDTO dto.CreateClassroomDTO
+
+	if err := ctx.BodyParser(&createClassroomDTO); err != nil {
+		return ctx.Status(fiber.StatusUnprocessableEntity).JSON(
+			helpers.ResponseError(err.Error()),
+		)
+	}
+
+	createClassroomDTO.TeacherID = uint(ctx.Locals("userId").(int))
+
+	validationErrors := helpers.ValidateRequest(createClassroomDTO)
+
+	if len(validationErrors) > 0 {
+		return ctx.Status(fiber.StatusBadRequest).JSON(
+			helpers.ResponseErrorWithData("Validation errors", validationErrors),
+		)
+
+	}
+
+	classroomResponse, err := c.classroomService.Create(ctx.Context(), createClassroomDTO)
+
+	if err != nil {
+		httpCode := helpers.GetHttpStatusCode(err)
+		return ctx.Status(httpCode).JSON(
+			helpers.ResponseError(err.Error()),
+		)
+	}
+
+	return ctx.Status(fiber.StatusCreated).JSON(
+		helpers.ResponseSuccess(classroomResponse),
 	)
 }
