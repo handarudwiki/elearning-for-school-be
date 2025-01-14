@@ -2,8 +2,11 @@ package repositories
 
 import (
 	"context"
+	"time"
 
+	"github.com/handarudwiki/helpers"
 	"github.com/handarudwiki/models"
+	"github.com/handarudwiki/models/dto"
 	"gorm.io/gorm"
 )
 
@@ -24,4 +27,29 @@ func (r *abcentRepository) Create(ctx context.Context, abcent *models.Abcent) (*
 	}
 
 	return abcent, nil
+}
+
+func (r *abcentRepository) FindByScheduleIDToday(ctx context.Context, scheduleID int, date string, query dto.QueryDTO) (abcents []*models.Abcent, count int64, err error) {
+	if date == "" {
+		date = time.Now().Format("2006-01-02")
+	}
+
+	err = r.db.Debug().Preload("User").
+		Scopes(helpers.Paginate(query.Page, query.Size)).
+		Where("schedule_id", scheduleID).
+		Where("DATE(abcents.created_at) = ?", date).
+		Joins("Join users on users.id = abcents.user_id AND users.role = ?", "2").
+		Find(&abcents).Error
+
+	if err != nil {
+		return
+	}
+
+	err = r.db.Model(&models.Abcent{}).
+		Where("schedule_id", scheduleID).
+		Where("DATE(abcents.created_at) = ?", date).
+		Joins("Join users on users.id = abcents.user_id AND users.role = ?", "2").
+		Count(&count).Error
+
+	return
 }
