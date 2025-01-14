@@ -25,6 +25,7 @@ func NewAbcent(app *fiber.App, abcentService services.AbcentService, jwtService 
 	abcents := app.Group("/api/v1/abcents")
 	abcents.Post("/", middlewares.CheckAuth(jwtService), abcentController.Create)
 	abcents.Get("/schedule/:schedule_id", middlewares.CheckAuth(jwtService), abcentController.ScheduleClassroomToday)
+	abcents.Put("/:id", middlewares.CheckAuth(jwtService), abcentController.Update)
 }
 
 func (c *AbcentController) Create(ctx *fiber.Ctx) (err error) {
@@ -89,5 +90,44 @@ func (c *AbcentController) ScheduleClassroomToday(ctx *fiber.Ctx) (err error) {
 
 	return ctx.Status(fiber.StatusOK).JSON(
 		helpers.ResponsePagination(abcents, paginate),
+	)
+}
+
+func (c *AbcentController) Update(ctx *fiber.Ctx) (err error) {
+	var dto dto.UpdateAbcentDTO
+
+	if err = ctx.BodyParser(&dto); err != nil {
+		return ctx.Status(fiber.StatusUnprocessableEntity).JSON(
+			helpers.ResponseError(err.Error()),
+		)
+	}
+
+	validationErrors := helpers.ValidateRequest(dto)
+
+	if len(validationErrors) > 0 {
+		return ctx.Status(fiber.StatusBadRequest).JSON(
+			helpers.ResponseErrorWithData("Validation errors", validationErrors),
+		)
+	}
+
+	id, err := strconv.Atoi(ctx.Params("id"))
+
+	if err != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(
+			helpers.ResponseError("Invalid abcent ID"),
+		)
+	}
+
+	abcentResponse, err := c.abcentService.Update(ctx.Context(), dto, id)
+
+	if err != nil {
+		httpCode := helpers.GetHttpStatusCode(err)
+		return ctx.Status(httpCode).JSON(
+			helpers.ResponseError(err.Error()),
+		)
+	}
+
+	return ctx.Status(fiber.StatusOK).JSON(
+		helpers.ResponseSuccess(abcentResponse),
 	)
 }

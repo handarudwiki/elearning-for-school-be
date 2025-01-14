@@ -22,5 +22,6 @@ type Abcent struct {
 
 type AbcentRepository interface {
 	Create(ctx context.Context, abcent *Abcent) (*Abcent, error)
+	Update(ctx context.Context, abcent *Abcent, id int) (*Abcent, error)
 	FindByScheduleIDToday(ctx context.Context, scheduleID int, date string, query dto.QueryDTO) (abcents []*Abcent, count int64, err error)
 }

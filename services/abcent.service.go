@@ -11,6 +11,7 @@ import (
 
 type AbcentService interface {
 	Create(ctx context.Context, dto dto.CreateAbcentDTO) (res *response.AbcentResponse, err error)
+	Update(ctx context.Context, dto dto.UpdateAbcentDTO, id int) (res *response.AbcentResponse, err error)
 	FindByScheduleIDToday(ctx context.Context, scheduleID int, date string, query dto.QueryDTO) (res []*response.AbcentResponse, paginate commons.Paginate, err error)
 }
 
@@ -57,4 +58,21 @@ func (s *abcentService) FindByScheduleIDToday(ctx context.Context, scheduleID in
 	res = response.ToAbcentResponses(abcents)
 
 	return
+}
+
+func (s *abcentService) Update(ctx context.Context, dto dto.UpdateAbcentDTO, id int) (res *response.AbcentResponse, err error) {
+	abcent := &models.Abcent{
+		IsAbcent: dto.IsAbcent,
+	}
+
+	abcent, err = s.abcentRepo.Update(ctx, abcent, id)
+
+	if err != nil {
+		return res, err
+	}
+
+	res = response.ToAbcentResponse(abcent)
+	res.ID = uint(id)
+
+	return res, nil
 }

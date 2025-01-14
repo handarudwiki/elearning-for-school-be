@@ -8,3 +8,10 @@ type CreateAbcentDTO struct {
 	Reason      int    `json:"reason"`
 	Details     string `json:"details"`
 }
+
+type UpdateAbcentDTO struct {
+	IsAbcent    bool   `json:"is_abcent"`
+	Reason      int    `json:"reason"`
+	Details     string `json:"details"`
+	Description string `json:"description"`
+}

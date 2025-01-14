@@ -53,3 +53,12 @@ func (r *abcentRepository) FindByScheduleIDToday(ctx context.Context, scheduleID
 
 	return
 }
+
+func (r *abcentRepository) Update(ctx context.Context, abcent *models.Abcent, id int) (*models.Abcent, error) {
+	err := r.db.Model(abcent).Where("id = ?", id).Updates(abcent).Update("is_abcent", abcent.IsAbcent).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return abcent, nil
+}
