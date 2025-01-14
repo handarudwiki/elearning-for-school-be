@@ -86,3 +86,26 @@ func (r *infoRepository) FindAll(ctx context.Context, dto dto.QueryDTO) ([]*mode
 
 	return infos, int(totalPages), err
 }
+
+func (r *infoRepository) FindByStatus(ctx context.Context, status bool, dto dto.QueryDTO) ([]*models.Info, int64, error) {
+	var infos []*models.Info
+
+	err := r.db.WithContext(ctx).
+		Preload("User").
+		Where("status = ?", status).
+		Scopes(helpers.SearchTitle(*dto.Search), helpers.Paginate(dto.Page, dto.Size)).
+		Find(&infos).Error
+
+	if err != nil {
+		return nil, 0, err
+	}
+
+	var total int64
+	err = r.db.Model(infos).Where("status = ?", status).Scopes(helpers.SearchTitle(*dto.Search)).Count(&total).Error
+
+	if err != nil {
+		return nil, 0, err
+	}
+
+	return infos, total, err
+}

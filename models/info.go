@@ -25,4 +25,5 @@ type InfoRepository interface {
 	Update(ctx context.Context, id int, info *Info) (*Info, error)
 	Delete(ctx context.Context, id int) error
 	FindAll(ctx context.Context, dto dto.QueryDTO) ([]*Info, int, error)
+	FindByStatus(ctx context.Context, status bool, dto dto.QueryDTO) ([]*Info, int64, error)
 }

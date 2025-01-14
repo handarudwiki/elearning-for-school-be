@@ -18,6 +18,7 @@ type InfoService interface {
 	Update(ctx context.Context, info *dto.InfoDto, id int) (res *response.InfoResponse, err error)
 	Delete(ctx context.Context, id int) error
 	FindAll(ctx context.Context, query dto.QueryDTO) (res []*response.InfoResponse, page commons.Paginate, err error)
+	FindPublicInfo(ctx context.Context, query dto.QueryDTO) (res []*response.InfoResponse, page commons.Paginate, err error)
 }
 
 type infoService struct {
@@ -118,6 +119,24 @@ func (s *infoService) FindAll(ctx context.Context, query dto.QueryDTO) (res []*r
 		Page:      query.Page,
 		Size:      query.Size,
 		TotalPage: total,
+	}
+
+	return res, page, nil
+}
+
+func (s *infoService) FindPublicInfo(ctx context.Context, query dto.QueryDTO) (res []*response.InfoResponse, page commons.Paginate, err error) {
+	infos, total, err := s.infoRepo.FindByStatus(ctx, true, query)
+
+	if err != nil {
+		return res, page, err
+	}
+
+	res = response.ToInfoResponseSlice(infos)
+
+	page = commons.Paginate{
+		Page:      query.Page,
+		Size:      query.Size,
+		TotalPage: int(total),
 	}
 
 	return res, page, nil

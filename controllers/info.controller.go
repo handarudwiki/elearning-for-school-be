@@ -24,11 +24,12 @@ func NewInfo(app *fiber.App, jwtService services.JWTService, infoService service
 	}
 
 	infos := app.Group("/api/v1/infos")
+	infos.Get("/public", infoContorller.FindPublicInfo)
 	infos.Post("/", middlewares.CheckAuth(jwtService), infoContorller.Create)
-	infos.Get("/:id", infoContorller.FindById)
+	infos.Get("/:id", middlewares.CheckAuth(jwtService), infoContorller.FindById)
 	infos.Put("/:id", middlewares.CheckAuth(jwtService), infoContorller.Update)
 	infos.Delete("/:id", middlewares.CheckAuth(jwtService), infoContorller.Delete)
-	infos.Get("/", infoContorller.FindAll)
+	infos.Get("/", middlewares.CheckAuth(jwtService), infoContorller.FindAll)
 }
 
 func (c *infoController) Create(ctx *fiber.Ctx) error {
@@ -165,6 +166,32 @@ func (c *infoController) FindAll(ctx *fiber.Ctx) error {
 	queryDTO.Search = &search
 
 	infos, totalPages, err := c.infoService.FindAll(ctx.Context(), queryDTO)
+
+	if err != nil {
+		httpCode := helpers.GetHttpStatusCode(err)
+		return ctx.Status(httpCode).JSON(
+			helpers.ResponseError(err.Error()),
+		)
+	}
+
+	return ctx.Status(fiber.StatusOK).JSON(
+		helpers.ResponsePagination(infos, totalPages),
+	)
+}
+
+func (c *infoController) FindPublicInfo(ctx *fiber.Ctx) error {
+	var queryDTO dto.QueryDTO
+
+	page, size := helpers.GetPaginationParams(ctx, commons.DEFAULTPAGE, commons.DEFAULTSIZE)
+
+	queryDTO.Page = page
+	queryDTO.Size = size
+
+	search := ctx.Query("search")
+
+	queryDTO.Search = &search
+
+	infos, totalPages, err := c.infoService.FindPublicInfo(ctx.Context(), queryDTO)
 
 	if err != nil {
 		httpCode := helpers.GetHttpStatusCode(err)
