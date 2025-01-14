@@ -74,3 +74,13 @@ func (r *classroomRepository) FindAll(ctx context.Context, dto dto.QueryDTO) (cl
 
 	return classrooms, totalPage, nil
 }
+
+func (r *classroomRepository) FindByTeacherID(ctx context.Context, teacherID int) ([]*models.Classroom, error) {
+	var classrooms []*models.Classroom
+	err := r.db.Where("teacher_id = ?", teacherID).Preload("Teacher").Find(&classrooms).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return classrooms, nil
+}

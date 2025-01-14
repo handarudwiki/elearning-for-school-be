@@ -25,4 +25,5 @@ type ClassroomRepository interface {
 	Update(ctx context.Context, classroom *Classroom, id int) (*Classroom, error)
 	Delete(ctx context.Context, id int) error
 	FindAll(ctx context.Context, dto dto.QueryDTO) ([]*Classroom, int64, error)
+	FindByTeacherID(ctx context.Context, teacherID int) ([]*Classroom, error)
 }

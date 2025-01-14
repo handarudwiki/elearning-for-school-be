@@ -11,18 +11,20 @@ import (
 	"gorm.io/gorm"
 )
 
-type ClassroomSubjectService interface {
-	FindByTeacherID(ctx context.Context, teacherID int) (res []response.ClassroomSubjectResponse, err error)
-	Create(ctx context.Context, dto dto.CreateClassrooomSubject) (res response.ClassroomSubjectResponse, err error)
-	Delete(ctx context.Context, id int) error
-	FindByID(ctx context.Context, id int) (res response.ClassroomSubjectResponse, err error)
-}
+type (
+	ClassroomSubjectService interface {
+		FindByTeacherID(ctx context.Context, teacherID int) (res []response.ClassroomSubjectResponse, err error)
+		Create(ctx context.Context, dto dto.CreateClassrooomSubject) (res response.ClassroomSubjectResponse, err error)
+		Delete(ctx context.Context, id int) error
+		FindByID(ctx context.Context, id int) (res response.ClassroomSubjectResponse, err error)
+	}
 
-type classroomSubjectService struct {
-	classroomSubjectRepo models.ClassroomSubjectRepository
-	clssroomService      ClassroomService
-	subjectService       SubjectService
-}
+	classroomSubjectService struct {
+		classroomSubjectRepo models.ClassroomSubjectRepository
+		clssroomService      ClassroomService
+		subjectService       SubjectService
+	}
+)
 
 func NewClassroomSubject(classroomSubjectRepo models.ClassroomSubjectRepository, clssroomService ClassroomService, subjectService SubjectService) ClassroomSubjectService {
 	return &classroomSubjectService{

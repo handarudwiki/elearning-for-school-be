@@ -21,6 +21,7 @@ func NewClassroom(app *fiber.App, classroomService services.ClassroomService, jw
 	}
 
 	classrooms := app.Group("/api/v1/classrooms")
+	classrooms.Get("/mine", middlewares.CheckAuth(classroomController.JwtService), classroomController.FindByTeacherID)
 	classrooms.Post("/", middlewares.CheckAuth(classroomController.JwtService), classroomController.Create)
 	classrooms.Get("/:id", classroomController.GetSingle)
 	classrooms.Get("/", classroomController.GetAll)
@@ -215,6 +216,23 @@ func (c *classroomController) GetClassroomStudent(ctx *fiber.Ctx) error {
 	}
 
 	res, err := c.classroomService.FindClassroomStudent(ctx.Context(), classroomID)
+
+	if err != nil {
+		httpCode := helpers.GetHttpStatusCode(err)
+		return ctx.Status(httpCode).JSON(
+			helpers.ResponseError(err.Error()),
+		)
+	}
+
+	return ctx.Status(fiber.StatusOK).JSON(
+		helpers.ResponseSuccess(res),
+	)
+}
+
+func (c *classroomController) FindByTeacherID(ctx *fiber.Ctx) error {
+	teacherID := ctx.Locals("userId").(int)
+
+	res, err := c.classroomService.FindByTeacherID(ctx.Context(), teacherID)
 
 	if err != nil {
 		httpCode := helpers.GetHttpStatusCode(err)
