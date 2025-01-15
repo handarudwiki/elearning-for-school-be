@@ -14,6 +14,7 @@ import (
 type ClassroomTaskService interface {
 	AsignTask(ctx context.Context, dto dto.AsignTaskDTO) (res []response.ClassroomTaskResponse, err error)
 	FindByID(ctx context.Context, id int) (res response.ClassroomTaskResponse, err error)
+	FindByClassroomID(ctx context.Context, classroomID int) (res []response.ClassroomTaskResponse, err error)
 }
 
 type classroomTaskService struct {
@@ -76,4 +77,17 @@ func (s *classroomTaskService) FindByID(ctx context.Context, id int) (res respon
 
 	return res, nil
 
+}
+
+func (s *classroomTaskService) FindByClassroomID(ctx context.Context, classroomID int) (res []response.ClassroomTaskResponse, err error) {
+	classroomTasks, err := s.classroomTaskRepository.FindByClassroomID(ctx, classroomID)
+	if err != nil {
+		return res, err
+	}
+
+	for _, classroomTask := range classroomTasks {
+		res = append(res, response.ToClassroomTaskResponse(classroomTask))
+	}
+
+	return res, nil
 }

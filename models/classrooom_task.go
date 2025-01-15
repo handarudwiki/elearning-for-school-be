@@ -16,4 +16,5 @@ type ClassroomTask struct {
 type ClassroomTaskRepository interface {
 	Create(ctx context.Context, classroomTask *ClassroomTask) (*ClassroomTask, error)
 	FindByID(ctx context.Context, id int) (*ClassroomTask, error)
+	FindByClassroomID(ctx context.Context, classroomID int) ([]*ClassroomTask, error)
 }
